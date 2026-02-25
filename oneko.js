@@ -1,3 +1,15 @@
+// ==UserScript==
+// @name            Oneko
+// @namespace       https://ellinet13.github.io
+// @match           *://*/*
+// @version         1.0.0
+// @author          ElliNet13
+// @description     cat follow mouse
+// @downloadURL     https://ellinet13.github.io/oneko/oneko.js
+// @updateURL       https://ellinet13.github.io/oneko/oneko.js
+// @homepageURL		  https://ellinet13.github.io/oneko/
+// ==/UserScript==
+
 // oneko.js: https://github.com/adryd325/oneko.js
 
 (async function oneko() {
@@ -6,7 +18,7 @@
     window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
 
   if (isReducedMotion) return;
-  
+
   const nekoEl = document.createElement("div");
   let nekoPosX = 32,
     nekoPosY = 32,
