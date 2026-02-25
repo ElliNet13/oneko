@@ -144,9 +144,8 @@
       mousePosX = remainingTimeLeft - 16;
 
       // Comfy special case
-      if (Spicetify.Config.current_theme === "Comfy") {
-        mousePosY = progressBarTop - 14;
-      }
+      // Small vertical offset for comfort
+      mousePosY = progressBarTop - 14;
 
       // Move the cat to the left of elapsed time if it is too close to the remaining time (Nord theme)
       if (remainingTimeLeft - elapsedTimeRight < 32) {
@@ -468,10 +467,8 @@
         div.classList.add("oneko-variant-button-selected");
       }
 
-      Spicetify.Tippy(div, {
-        ...Spicetify.TippyProps,
-        content: variantEnum[1],
-      });
+      // Use native tooltip via title attribute instead of Spicetify.Tippy
+      div.title = variantEnum[1];
 
       return div;
     }
@@ -483,18 +480,92 @@
     return container;
   }
 
-  (async () => {
-    while (!Spicetify.Mousetrap) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    Spicetify.Mousetrap.bind("o n e k o", () => {
-      Spicetify.PopupModal.display({
-        title: "Choose your neko",
-        // Render the modal new every time it is opened
-        content: pickerModal(),
+    // Simple popup modal replacement for Spicetify.PopupModal
+    function showPopupModal(opts) {
+      const overlay = document.createElement("div");
+      overlay.style.position = "fixed";
+      overlay.style.left = "0";
+      overlay.style.top = "0";
+      overlay.style.width = "100%";
+      overlay.style.height = "100%";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.background = "rgba(0,0,0,0.4)";
+      overlay.style.zIndex = "9999";
+
+      const modal = document.createElement("div");
+      modal.style.background = "white";
+      modal.style.color = "black";
+      modal.style.borderRadius = "8px";
+      modal.style.padding = "12px";
+      modal.style.minWidth = "320px";
+      modal.style.maxWidth = "90%";
+      modal.style.maxHeight = "80%";
+      modal.style.overflow = "auto";
+
+      const header = document.createElement("div");
+      header.style.display = "flex";
+      header.style.justifyContent = "space-between";
+      header.style.alignItems = "center";
+
+      const title = document.createElement("div");
+      title.textContent = opts.title || "";
+      title.style.fontWeight = "600";
+
+      const close = document.createElement("button");
+      close.textContent = "×";
+      close.style.border = "none";
+      close.style.background = "transparent";
+      close.style.fontSize = "20px";
+      close.style.cursor = "pointer";
+
+      header.appendChild(title);
+      header.appendChild(close);
+
+      const body = document.createElement("div");
+      if (opts.content) body.appendChild(opts.content);
+
+      modal.appendChild(header);
+      modal.appendChild(body);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+
+      function cleanup() {
+        window.removeEventListener("keydown", onKey);
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }
+
+      function onKey(e) {
+        if (e.key === "Escape") cleanup();
+      }
+
+      close.addEventListener("click", cleanup);
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) cleanup();
       });
-    });
-  })();
+      window.addEventListener("keydown", onKey);
+
+      return { close: cleanup };
+    }
+
+    // Keyboard sequence listener: listens for the sequence "oneko"
+    (function () {
+      const seq = [];
+      const target = "oneko";
+      function onKeydown(e) {
+        const active = document.activeElement;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
+        const k = e.key.length === 1 ? e.key.toLowerCase() : null;
+        if (!k) return;
+        seq.push(k);
+        if (seq.length > target.length) seq.shift();
+        if (seq.join("") === target) {
+          showPopupModal({ title: "Choose your neko", content: pickerModal() });
+        }
+      }
+      window.addEventListener("keydown", onKeydown);
+    })();
 
   if (parseLocalStorage("forceSleep", false)) {
     while (!document.querySelector(".main-nowPlayingBar-center .playback-progressbar")) {
