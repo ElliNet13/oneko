@@ -12,4 +12,4 @@
 
 // Update after installing this script to get the actual script
 
-(async function oneko() {print('Please update "Oneko" in your userscript manager.')})();
+(async function oneko() {alert('Please update "Oneko" in your userscript manager.')})();
