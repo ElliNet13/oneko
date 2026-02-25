@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.0.4
+// @version         1.0.5
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -31,6 +31,10 @@
   if (isReducedMotion) return;
 
   if (typeof window.onekoInterval !== "undefined") return // Will only exist if oneko is already running, we do not want to run it twice
+
+  if (window.isOnekoRunning) return // Second check if oneko is already running
+
+  window.isOnekoRunning = true
 
   const nekoEl = document.createElement("div");
   let nekoPosX = 32,
