@@ -2,13 +2,14 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.0.6
+// @version         1.0.7
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
 // @updateURL       https://ellinet13.github.io/oneko/oneko.js
 // @homepageURL		  https://ellinet13.github.io/oneko/
 // @grant GM_info
+// @noframes
 // ==/UserScript==
 
 // oneko.js: https://github.com/adryd325/oneko.js
