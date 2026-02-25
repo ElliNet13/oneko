@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.0.0
+// @version         1.0.1
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -131,6 +131,9 @@
   function create() {
     variant = parseLocalStorage("variant", "classic");
     kuroNeko = parseLocalStorage("kuroneko", false);
+    nekoPosX = parseLocalStorage("nekoPosX", 32);
+    nekoPosY = parseLocalStorage("nekoPosY", 32);
+    forceSleep = parseLocalStorage("forceSleep", false);
 
     if (!variants.some((v) => v[0] === variant)) {
       variant = "classic";
@@ -150,6 +153,9 @@
     nekoEl.style.zIndex = "99";
 
     document.body.appendChild(nekoEl);
+
+    mousePosX = nekoPosX;
+    mousePosY = nekoPosY;
 
     window.addEventListener("mousemove", (e) => {
       if (forceSleep) return;
@@ -205,6 +211,8 @@
         nekoPosY = startNekoY + e.clientY - startY;
         nekoEl.style.left = `${nekoPosX - 16}px`;
         nekoEl.style.top = `${nekoPosY - 16}px`;
+        localStorage.setItem("oneko:nekoPosX", nekoPosX);
+        localStorage.setItem("oneko:nekoPosY", nekoPosY);
       };
 
       const mouseup = () => {
@@ -360,6 +368,8 @@
 
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
+    localStorage.setItem("oneko:nekoPosX", nekoPosX);
+    localStorage.setItem("oneko:nekoPosY", nekoPosY);
   }
 
   create();
