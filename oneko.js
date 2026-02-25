@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.0.5
+// @version         1.0.6
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -32,9 +32,9 @@
 
   if (typeof window.onekoInterval !== "undefined") return // Will only exist if oneko is already running, we do not want to run it twice
 
-  if (window.isOnekoRunning) return // Second check if oneko is already running
+  if (document.documentElement.__onekoRunning__) return // Second check if oneko is already running that will work better in userscript
 
-  window.isOnekoRunning = true
+  document.documentElement.__onekoRunning__ = true
 
   const nekoEl = document.createElement("div");
   let nekoPosX = 32,
@@ -254,6 +254,40 @@
     nekoEl.addEventListener("dblclick", sleep);
 
     window.onekoInterval = setInterval(frame, 100);
+
+    // Watch for when the neko element is removed from the DOM
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        // Check if our element was removed
+        if (mutation.type === "childList") {
+          if (!document.body.contains(nekoEl)) {
+            // Try to reattach it
+            if (document.body) {
+              document.body.appendChild(nekoEl);
+            }
+          }
+        }
+      }
+    });
+
+    // Observe the body for child changes
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: false });
+    }
+
+    // Also listen for body element replacement by observing the documentElement
+    const rootObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "childList") {
+          // Check if body was removed/replaced
+          if (!document.body.contains(nekoEl) && document.body) {
+            document.body.appendChild(nekoEl);
+          }
+        }
+      }
+    });
+
+    rootObserver.observe(document.documentElement, { childList: true, subtree: false });
   }
 
   function getSprite(name, frame) {
@@ -333,6 +367,16 @@
 
   function frame() {
     frameCount += 1;
+
+    // Check if the element was removed from the DOM, if so, recreate it
+    if (!document.body.contains(nekoEl)) {
+      if (document.body) {
+        document.body.appendChild(nekoEl);
+      } else {
+        // Wait for body to exist
+        return;
+      }
+    }
 
     if (grabbing) {
       grabStop && setSprite("alert", 0);
