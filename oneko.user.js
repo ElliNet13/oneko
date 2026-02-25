@@ -4,7 +4,7 @@
 // @match           *://*/*
 // @version         0.0.0
 // @author          ElliNet13
-// @description     cat follow mouse
+// @description     UPDATE THIS SCRIPT AFTER INSTALLING
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
 // @updateURL       https://ellinet13.github.io/oneko/oneko.js
 // @homepageURL	    https://ellinet13.github.io/oneko/
