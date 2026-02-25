@@ -2,20 +2,31 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.0.1
+// @version         1.0.2
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
 // @updateURL       https://ellinet13.github.io/oneko/oneko.js
 // @homepageURL		  https://ellinet13.github.io/oneko/
+// @grant GM_info
 // ==/UserScript==
 
 // oneko.js: https://github.com/adryd325/oneko.js
 
 (async function oneko() {
+  function isUserscript() {
+    return (
+      typeof GM_info !== "undefined" ||
+      typeof GM !== "undefined" ||
+      typeof unsafeWindow !== "undefined"
+    );
+  }
+
   const isReducedMotion =
     window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
     window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+  
+  if (isUserscript()) isReducedMotion = false;
 
   if (isReducedMotion) return;
 
