@@ -8,6 +8,7 @@
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
 // @updateURL       https://ellinet13.github.io/oneko/oneko.js
 // @homepageURL	    https://ellinet13.github.io/oneko/
+// @noframes
 // ==/UserScript==
 
 // Update after installing this script to get the actual script
