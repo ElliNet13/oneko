@@ -6,6 +6,30 @@
   <title>oneko.js</title>
 </head>
 <body>
-   <script src="./oneko.js"></script>
+  <!-- Add a bunch of lorem ipsum paragraphs to make the page scrollable -->
+  <h1>Welcome to Oneko Demo</h1>
+  <p>This page is intentionally long so you can scroll and watch the cat follow the content.</p>
+  <div id="filler">
+    <!-- repeat paragraphs -->
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod urna nec nisi vulputate, quis molestie eros venenatis. Cras eget dolor vitae lectus malesuada mollis. Vivamus in orci sit amet neque egestas finibus eget a neque.</p>
+    <p>Nulla facilisi. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec iaculis, mauris non sagittis tincidunt, velit libero venenatis turpis, eget tempor arcu erat sit amet nisl.</p>
+    <p>Praesent mollis lorem at purus fringilla, sit amet gravida velit efficitur. Donec a lorem sed urna aliquet vehicula. Integer laoreet venenatis odio, quis vestibulum ipsum porttitor non.</p>
+    <p>Phasellus sagittis sem vitae neque interdum, vitae egestas lectus suscipit. Aliquam erat volutpat. Integer a bibendum lorem. Nulla sit amet felis nec neque dictum porta.</p>
+    <p>Sed sit amet turpis et lectus dictum gravida. Nunc convallis ipsum vitae orci bibendum, sed sollicitudin nunc gravida. Mauris tristique felis sed metus consectetur, ac cursus lectus vestibulum.</p>
+    <!-- copy these lines multiple times to ensure scrollability -->
+  </div>
+  <!-- clone the filler paragraphs to make the page very long -->
+  <script>
+    (function(){
+      const filler = document.getElementById('filler');
+      if (filler) {
+        let html = filler.innerHTML;
+        for (let i = 0; i < 50; i++) {
+          filler.insertAdjacentHTML('beforeend', html);
+        }
+      }
+    })();
+  </script>
+  <script src="./oneko.js"></script>
 </body>
 </html>

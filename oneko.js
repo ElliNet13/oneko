@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.0.7
+// @version         1.8
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -42,6 +42,9 @@
     nekoPosY = 32,
     mousePosX = 0,
     mousePosY = 0,
+    // keep last-known client coordinates so we can recalc page coords on scroll
+    lastMouseClientX = 0,
+    lastMouseClientY = 0,
     frameCount = 0,
     idleTime = 0,
     idleAnimation = null,
@@ -51,7 +54,10 @@
     grabStop = true,
     nudge = false,
     kuroNeko = false,
-    variant = "classic";
+    variant = "classic",
+    // document bounds (page coordinates) where the neko is allowed to roam
+    maxX = window.innerWidth - 16,
+    maxY = window.innerHeight - 16;
 
   function parseLocalStorage(key, fallback) {
     try {
@@ -160,7 +166,9 @@
     nekoEl.id = "oneko";
     nekoEl.style.width = "32px";
     nekoEl.style.height = "32px";
-    nekoEl.style.position = "fixed";
+    // use absolute positioning so the cat is part of the document flow
+    // and will move when the page scrolls
+    nekoEl.style.position = "absolute";
     // nekoEl.style.pointerEvents = "none";
     nekoEl.style.backgroundImage = `url('https://raw.githubusercontent.com/ElliNet13/oneko/main/assets/oneko/oneko-${variant}.gif')`;
     nekoEl.style.imageRendering = "pixelated";
@@ -178,15 +186,55 @@
     window.addEventListener("mousemove", (e) => {
       if (forceSleep) return;
 
-      mousePosX = e.clientX;
-      mousePosY = e.clientY;
+      // remember last client coordinates so we can recompute page coordinates later
+      lastMouseClientX = e.clientX;
+      lastMouseClientY = e.clientY;
+      mousePosX = e.clientX + window.scrollX;
+      mousePosY = e.clientY + window.scrollY;
     });
+
+    // When the page scrolls the mouse pointer stays in the same viewport
+    // position but its document coordinates change.  Update mousePos to the
+    // new page coordinates so the cat will chase the cursor after scrolling.
+    window.addEventListener("scroll", () => {
+      mousePosX = lastMouseClientX + window.scrollX;
+      mousePosY = lastMouseClientY + window.scrollY;
+    });
+
+    // track document size changes so the cat's roam area is updated
+    function recalcBounds() {
+      // scrollWidth/Height give the full size of the document
+      maxX = Math.max(16, document.documentElement.scrollWidth - 16);
+      maxY = Math.max(16, document.documentElement.scrollHeight - 16);
+      // if the cat is now outside the permitted area, pull it back in
+      if (nekoPosX > maxX) nekoPosX = maxX;
+      if (nekoPosY > maxY) nekoPosY = maxY;
+      nekoEl.style.left = `${nekoPosX - 16}px`;
+      nekoEl.style.top = `${nekoPosY - 16}px`;
+    }
+
+    // compute initial bounds on creation
+    recalcBounds();
+
+    // update once DOM content is available
+    document.addEventListener("DOMContentLoaded", recalcBounds);
+
+    // also observe size changes (e.g. dynamic content)
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(recalcBounds);
+      ro.observe(document.documentElement);
+    } else {
+      // fallback: use mutation observer as a catch-all
+      const mo = new MutationObserver(recalcBounds);
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    }
 
     window.addEventListener("resize", () => {
       if (forceSleep) {
         forceSleep = false;
         sleep();
       }
+      recalcBounds();
     });
 
     // Handle dragging of the cat
@@ -379,6 +427,37 @@
       }
     }
 
+    // if the cat is completely outside the current viewport edges, push it back
+    // onto the nearest edge so the user can see it
+    function ensureVisible() {
+      const left = window.scrollX + 16;
+      const top = window.scrollY + 16;
+      const right = window.scrollX + window.innerWidth - 16;
+      const bottom = window.scrollY + window.innerHeight - 16;
+
+      let moved = false;
+      if (nekoPosX < left) {
+        nekoPosX = left;
+        moved = true;
+      } else if (nekoPosX > right) {
+        nekoPosX = right;
+        moved = true;
+      }
+      if (nekoPosY < top) {
+        nekoPosY = top;
+        moved = true;
+      } else if (nekoPosY > bottom) {
+        nekoPosY = bottom;
+        moved = true;
+      }
+      if (moved) {
+        nekoEl.style.left = `${nekoPosX - 16}px`;
+        nekoEl.style.top = `${nekoPosY - 16}px`;
+      }
+    }
+
+    ensureVisible();
+
     if (grabbing) {
       grabStop && setSprite("alert", 0);
       return;
@@ -426,8 +505,9 @@
     nekoPosX -= (diffX / distance) * nekoSpeed;
     nekoPosY -= (diffY / distance) * nekoSpeed;
 
-    nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth - 16);
-    nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);
+    // confine to the current document bounds (not just viewport)
+    nekoPosX = Math.min(Math.max(16, nekoPosX), maxX);
+    nekoPosY = Math.min(Math.max(16, nekoPosY), maxY);
 
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
