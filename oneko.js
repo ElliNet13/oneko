@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         2.2
+// @version         2.3
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -34,7 +34,12 @@
 
   if (typeof window.onekoInterval !== "undefined") return // Will only exist if oneko is already running, we do not want to run it twice
 
-  if (unsafeWindow && typeof unsafeWindow.onekoInterval !== "undefined") return // Same as above but for userscript unsafeWindow
+  const unsafeWindowExists = typeof unsafeWindow !== "undefined"
+
+  if (
+    unsafeWindowExists &&
+    typeof unsafeWindow.onekoInterval !== "undefined"
+  ) return; // Same as above but for userscript unsafeWindow
 
   if (document.documentElement.__onekoRunning__) return // Second check if oneko is already running that will work better in userscript
 
@@ -394,7 +399,7 @@
 
     window.onekoInterval = setInterval(frame, 100);
 
-    if (unsafeWindow) {
+    if (unsafeWindowExists) {
       unsafeWindow.onekoInterval = window.onekoInterval;
     }
 
