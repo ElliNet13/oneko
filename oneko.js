@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.8
+// @version         1.9
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -241,44 +241,59 @@
     nekoEl.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
       grabbing = true;
-      let startX = e.clientX;
-      let startY = e.clientY;
-      let startNekoX = nekoPosX;
-      let startNekoY = nekoPosY;
+      // determine offset between pointer and cat in page coords
+      const pageX0 = e.clientX + window.scrollX;
+      const pageY0 = e.clientY + window.scrollY;
+      dragOffsetX = nekoPosX - pageX0;
+      dragOffsetY = nekoPosY - pageY0;
       let grabInterval;
 
+      function movePointer(pageX, pageY) {
+        nekoPosX = pageX + dragOffsetX;
+        nekoPosY = pageY + dragOffsetY;
+        nekoEl.style.left = `${nekoPosX - 16}px`;
+        nekoEl.style.top = `${nekoPosY - 16}px`;
+        localStorage.setItem("oneko:nekoPosX", nekoPosX);
+        localStorage.setItem("oneko:nekoPosY", nekoPosY);
+      }
+
+      const onscrollDrag = () => {
+        const pageX = lastMouseClientX + window.scrollX;
+        const pageY = lastMouseClientY + window.scrollY;
+        movePointer(pageX, pageY);
+      };
+      window.addEventListener("scroll", onscrollDrag, { passive: true });
+
       const mousemove = (e) => {
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
+        const pageX = e.clientX + window.scrollX;
+        const pageY = e.clientY + window.scrollY;
+        const deltaX = pageX - pageX0;
+        const deltaY = pageY - pageY0;
         const absDeltaX = Math.abs(deltaX);
         const absDeltaY = Math.abs(deltaY);
 
-        // Scratch in the opposite direction of the drag
+        // Scratch animation
         if (absDeltaX > absDeltaY && absDeltaX > 10) {
           setSprite(deltaX > 0 ? "scratchWallW" : "scratchWallE", frameCount);
         } else if (absDeltaY > absDeltaX && absDeltaY > 10) {
           setSprite(deltaY > 0 ? "scratchWallN" : "scratchWallS", frameCount);
         }
 
-        if (grabStop || absDeltaX > 10 || absDeltaY > 10 || Math.sqrt(deltaX ** 2 + deltaY ** 2) > 10) {
+        if (
+          grabStop ||
+          absDeltaX > 10 ||
+          absDeltaY > 10 ||
+          Math.sqrt(deltaX ** 2 + deltaY ** 2) > 10
+        ) {
           grabStop = false;
           clearTimeout(grabInterval);
           grabInterval = setTimeout(() => {
             grabStop = true;
             nudge = false;
-            startX = e.clientX;
-            startY = e.clientY;
-            startNekoX = nekoPosX;
-            startNekoY = nekoPosY;
           }, 150);
         }
 
-        nekoPosX = startNekoX + e.clientX - startX;
-        nekoPosY = startNekoY + e.clientY - startY;
-        nekoEl.style.left = `${nekoPosX - 16}px`;
-        nekoEl.style.top = `${nekoPosY - 16}px`;
-        localStorage.setItem("oneko:nekoPosX", nekoPosX);
-        localStorage.setItem("oneko:nekoPosY", nekoPosY);
+        movePointer(pageX, pageY);
       };
 
       const mouseup = () => {
@@ -287,6 +302,7 @@
         resetIdleAnimation();
         window.removeEventListener("mousemove", mousemove);
         window.removeEventListener("mouseup", mouseup);
+        window.removeEventListener("scroll", onscrollDrag);
       };
 
       window.addEventListener("mousemove", mousemove);
