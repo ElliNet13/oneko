@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         1.9
+// @version         2.0
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -244,13 +244,16 @@
       // determine offset between pointer and cat in page coords
       const pageX0 = e.clientX + window.scrollX;
       const pageY0 = e.clientY + window.scrollY;
-      dragOffsetX = nekoPosX - pageX0;
-      dragOffsetY = nekoPosY - pageY0;
+      let dragOffsetX = nekoPosX - pageX0;
+      let dragOffsetY = nekoPosY - pageY0;
       let grabInterval;
 
       function movePointer(pageX, pageY) {
         nekoPosX = pageX + dragOffsetX;
         nekoPosY = pageY + dragOffsetY;
+        // Constrain to document bounds
+        nekoPosX = Math.min(Math.max(16, nekoPosX), maxX);
+        nekoPosY = Math.min(Math.max(16, nekoPosY), maxY);
         nekoEl.style.left = `${nekoPosX - 16}px`;
         nekoEl.style.top = `${nekoPosY - 16}px`;
         localStorage.setItem("oneko:nekoPosX", nekoPosX);
@@ -307,6 +310,74 @@
 
       window.addEventListener("mousemove", mousemove);
       window.addEventListener("mouseup", mouseup);
+    });
+
+    // Handle touch dragging on mobile
+    nekoEl.addEventListener("touchstart", (e) => {
+      grabbing = true;
+      const touch = e.touches[0];
+      const pageX0 = touch.clientX + window.scrollX;
+      const pageY0 = touch.clientY + window.scrollY;
+      let dragOffsetX = nekoPosX - pageX0;
+      let dragOffsetY = nekoPosY - pageY0;
+      let grabInterval;
+
+      function movePointer(pageX, pageY) {
+        nekoPosX = pageX + dragOffsetX;
+        nekoPosY = pageY + dragOffsetY;
+        // Constrain to document bounds
+        nekoPosX = Math.min(Math.max(16, nekoPosX), maxX);
+        nekoPosY = Math.min(Math.max(16, nekoPosY), maxY);
+        nekoEl.style.left = `${nekoPosX - 16}px`;
+        nekoEl.style.top = `${nekoPosY - 16}px`;
+        localStorage.setItem("oneko:nekoPosX", nekoPosX);
+        localStorage.setItem("oneko:nekoPosY", nekoPosY);
+      }
+
+      const touchmove = (e) => {
+        e.preventDefault();
+        if (!grabbing) return;
+        const touch = e.touches[0];
+        const pageX = touch.clientX + window.scrollX;
+        const pageY = touch.clientY + window.scrollY;
+        const deltaX = pageX - pageX0;
+        const deltaY = pageY - pageY0;
+        const absDeltaX = Math.abs(deltaX);
+        const absDeltaY = Math.abs(deltaY);
+
+        if (absDeltaX > absDeltaY && absDeltaX > 10) {
+          setSprite(deltaX > 0 ? "scratchWallW" : "scratchWallE", frameCount);
+        } else if (absDeltaY > absDeltaX && absDeltaY > 10) {
+          setSprite(deltaY > 0 ? "scratchWallN" : "scratchWallS", frameCount);
+        }
+
+        if (
+          grabStop ||
+          absDeltaX > 10 ||
+          absDeltaY > 10 ||
+          Math.sqrt(deltaX ** 2 + deltaY ** 2) > 10
+        ) {
+          grabStop = false;
+          clearTimeout(grabInterval);
+          grabInterval = setTimeout(() => {
+            grabStop = true;
+            nudge = false;
+          }, 150);
+        }
+
+        movePointer(pageX, pageY);
+      };
+
+      const touchend = () => {
+        grabbing = false;
+        nudge = true;
+        resetIdleAnimation();
+        window.removeEventListener("touchmove", touchmove);
+        window.removeEventListener("touchend", touchend);
+      };
+
+      window.addEventListener("touchmove", touchmove, { passive: false });
+      window.addEventListener("touchend", touchend);
     });
 
     nekoEl.addEventListener("contextmenu", (e) => {
