@@ -9,6 +9,7 @@
 // @updateURL       https://ellinet13.github.io/oneko/oneko.js
 // @homepageURL		  https://ellinet13.github.io/oneko/
 // @grant GM_info
+// @grant unsafeWindow
 // @noframes
 // ==/UserScript==
 
@@ -32,6 +33,8 @@
   if (isReducedMotion) return;
 
   if (typeof window.onekoInterval !== "undefined") return // Will only exist if oneko is already running, we do not want to run it twice
+
+  if (unsafeWindow && typeof unsafeWindow.onekoInterval !== "undefined") return // Same as above but for userscript unsafeWindow
 
   if (document.documentElement.__onekoRunning__) return // Second check if oneko is already running that will work better in userscript
 
