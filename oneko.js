@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         2.3
+// @version         2.4
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -183,8 +183,8 @@
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
     nekoEl.style.filter = kuroNeko ? "invert(100%)" : "none";
-    // Render Oneko below Spicetify's Popup Modal
-    nekoEl.style.zIndex = "99";
+    // Always be on top
+    nekoEl.style.zIndex = toString(Number.MAX_SAFE_INTEGER);
 
     document.body.appendChild(nekoEl);
 
