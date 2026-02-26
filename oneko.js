@@ -2,7 +2,7 @@
 // @name            Oneko
 // @namespace       https://ellinet13.github.io
 // @match           *://*/*
-// @version         2.1
+// @version         2.2
 // @author          ElliNet13
 // @description     cat follow mouse
 // @downloadURL     https://ellinet13.github.io/oneko/oneko.js
@@ -393,6 +393,10 @@
     nekoEl.addEventListener("dblclick", sleep);
 
     window.onekoInterval = setInterval(frame, 100);
+
+    if (unsafeWindow) {
+      unsafeWindow.onekoInterval = window.onekoInterval;
+    }
 
     // Watch for when the neko element is removed from the DOM
     const observer = new MutationObserver((mutations) => {
